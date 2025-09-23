@@ -1,3 +1,6 @@
 [submodule "external_submodules/eigen"]
 	path = external_submodules/eigen
 	url = https://gitlab.com/libeigen/eigen.git
+[submodule "external_submodules/EigenRand"]
+	path = external_submodules/EigenRand
+	url = https://github.com/bab2min/EigenRand
