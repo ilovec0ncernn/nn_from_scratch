@@ -3,17 +3,21 @@
 namespace nn {
 
 Vector ReLU::forward(const Vector& z) const {
-    Vector y = z;
-    for (int i = 0; i < y.size(); ++i)
-        y[i] = y[i] > 0.0 ? y[i] : 0.0;
-    return y;
+    return z.cwiseMax(0.0);
 }
 
-Vector ReLU::derivative(const Vector& z, const Vector& y) const {
-    Vector d = z;
-    for (int i = 0; i < d.size(); ++i)
-        d[i] = d[i] > 0.0 ? 1.0 : 0.0;
-    return d;
+Vector ReLU::derivative(const Vector& z) const {
+    return (z.array() > 0.0).cast<float>().matrix();
+}
+
+Vector Softmax::forward(const Vector& z) const {
+    const float m = z.maxCoeff();
+    const Vector e = (z.array() - m).exp();
+    return e / e.sum();
+}
+
+Vector Softmax::derivative(const Vector& z) const {
+    return (z.array() * (1.0 - z.array())).matrix(); // диагональная часть якобиана
 }
 
 }  // namespace nn
