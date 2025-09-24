@@ -4,9 +4,6 @@
 [submodule "external_submodules/EigenRand"]
 	path = external_submodules/EigenRand
 	url = https://github.com/bab2min/EigenRand
-[submodule "mnist"]
-	path = mnist
-	url = https://github.com/wichtounet/mnist.git
 [submodule "external_submodules/mnist"]
 	path = external_submodules/mnist
 	url = https://github.com/wichtounet/mnist.git
