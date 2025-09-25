@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Eigen/Dense>
 
 #include "ActivationFunctions.h"
@@ -7,24 +9,13 @@ namespace nn {
 
 class Layer {
    public:
-    // конструктор через случайную инициализацию
     Layer(Index in_dim, Index out_dim, const ActivationFunction* act, RNG& rng);
 
-    Vector Forward(const Vector& x);  // forward prop: y = sigma(Ax + b)
+    Vector Forward(const Vector& x); // forward: y = sigma(Ax + b)
+    Vector BackwardDy(const Vector& dL_dy); // backward: на вход dL/dy, возвращает dL/dx и накапливает dA, db
 
-    // upstream == dL/dy (градиент из следующего слоя ПОСЛЕ активации текущего слоя).
-    Matrix GradA(const Vector& x, const Vector& upstream) const;           // dL/dA
-    Vector GradB(const Vector& x, const Vector& upstream) const;           // dL/db
-    Vector BackpropToPrev(const Vector& x, const Vector& upstream) const;  // dL/dx
-
-    // стандартный случай: на вход dL/dy (будет домножаться на sigma'(z))
-    Vector BackwardDy(const Vector& dL_dy);  // возвращает dL/dx и накапливает градиенты
-
-    // специальный случай (softmax + кросс-энтропия на последнем слое): на вход dL/dz
-    Vector BackwardDz(const Vector& dL_dz);  // возвращает dL/dx и накапливает градиенты
-
-    // применение и обнуление батчевых градиентов
-    void Step(float lr, int batch_size);
+    // шаг по среднему градиенту за батч + обнуление
+    void Step(Scalar lr, int batch_size);
     void ZeroGrad();
 
     const Matrix& A() const {
@@ -54,7 +45,7 @@ class Layer {
     Vector b_;
     const ActivationFunction* sigma_;
 
-    Vector x_, z_, y_;  // кэши для backpropagation
+    Vector x_, z_, y_; // кэши для backprop
 
     // аккумуляторы градиентов за батч
     Matrix dA_sum_;

@@ -5,12 +5,13 @@
 namespace nn {
 
 Matrix Layer::InitA(Index out_dim, Index in_dim, RNG& rng) {
-    // Нормальное распределение N(0, 0.05)
-    return Eigen::Rand::normal<Matrix>(out_dim, in_dim, 0.0, 0.05, rng.gen);
+    Matrix M = Eigen::Rand::normal<Matrix>(out_dim, in_dim, rng.gen);
+    return M * Scalar(0.05);
 }
 
 Vector Layer::InitB(Index out_dim, RNG& rng) {
-    return Eigen::Rand::normal<Vector>(out_dim, 1, 0.0, 0.01, rng.gen);
+    Vector v = Eigen::Rand::normal<Vector>(out_dim, 1, rng.gen);
+    return v * Scalar(0.01);
 }
 
 Layer::Layer(Index in_dim, Index out_dim, const ActivationFunction* sigma, RNG& rng)
@@ -30,41 +31,21 @@ Vector Layer::Forward(const Vector& x) {
     return y_;
 }
 
-Matrix Layer::GradA(const Vector& x, const Vector& upstream) const {
-    Vector z = A_ * x + b_;
-    Vector y = sigma_->forward(z);
-    Vector d_sigma = sigma_->derivative(y);
-    Vector dL_dz = upstream.array() * d_sigma.array();
-    return dL_dz * x.transpose();
-}
-
-Vector Layer::GradB(const Vector& x, const Vector& upstream) const {
-    Vector z = A_ * x + b_;
-    Vector y = sigma_->forward(z);
-    Vector d_sigma = sigma_->derivative(y);
-    Vector dL_dz = upstream.array() * d_sigma.array();
-    return dL_dz;
-}
-
-Vector Layer::BackpropToPrev(const Vector& x, const Vector& upstream) const {
-    Vector z = A_ * x + b_;
-    Vector y = sigma_->forward(z);
-    Vector d_sigma = sigma_->derivative(y);
-    Vector dL_dz = upstream.array() * d_sigma.array();
-    return A_.transpose() * dL_dz;
-}
-
 Vector Layer::BackwardDy(const Vector& dL_dy) {
-    Vector d_sigma = sigma_->derivative(y_);
-    Vector dL_dz = dL_dy.array() * d_sigma.array();
-    dA_sum_ += dL_dz * x_.transpose();
-    db_sum_ += dL_dz;
-    return A_.transpose() * dL_dz;
-}
+    // dL/dz
+    Vector dL_dz;
+    if (auto sm = dynamic_cast<const Softmax*>(sigma_)) {
+        dL_dz = sm->backwardFromDy(y_, dL_dy);
+    } else {
+        Vector d = sigma_->derivative(z_);
+        dL_dz = (dL_dy.array() * d.array()).matrix();
+    }
 
-Vector Layer::BackwardDz(const Vector& dL_dz) {
+    // градиенты параметров
     dA_sum_ += dL_dz * x_.transpose();
     db_sum_ += dL_dz;
+
+    // dL/dx
     return A_.transpose() * dL_dz;
 }
 
