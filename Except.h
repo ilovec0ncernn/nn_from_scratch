@@ -1,5 +1,7 @@
+#pragma once
+
 namespace except {
 
-void react();
+void React();
 
 } // namespace except
