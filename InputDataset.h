@@ -1,4 +1,12 @@
+#pragma once
+
+#include <string>
+
 #include "Alias.h"
+
+#ifndef NN_MNIST_DIR
+#define NN_MNIST_DIR "external_submodules/mnist"
+#endif
 
 namespace nn {
 
@@ -9,7 +17,7 @@ struct Split {
 
 class InputDataset {
    public:
-    static Split load_mnist();
+    static Split LoadMnist(const std::string& dir = NN_MNIST_DIR);
 };
 
 }  // namespace nn
