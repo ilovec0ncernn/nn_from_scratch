@@ -1,19 +1,26 @@
 #pragma once
-#include <Eigen/Dense>
+
+#include "Alias.h"
 
 namespace nn {
-    
+
 class LossFunction {
    public:
     virtual ~LossFunction() = default;
-    virtual double loss(const Eigen::VectorXd& y_true, const Eigen::VectorXd& y_pred) const = 0;
-    virtual Eigen::VectorXd grad(const Eigen::VectorXd& y_true, const Eigen::VectorXd& y_pred) const = 0;  // dL/dy_pred
+    virtual Scalar Loss(const Vector& y_true, const Vector& y_pred) const = 0;
+    virtual Vector Grad(const Vector& y_true, const Vector& y_pred) const = 0;
 };
 
 class MSE : public LossFunction {
    public:
-    double loss(const Eigen::VectorXd& y_true, const Eigen::VectorXd& y_pred) const override;
-    Eigen::VectorXd grad(const Eigen::VectorXd& y_true, const Eigen::VectorXd& y_pred) const override;
+    Scalar Loss(const Vector& y_true, const Vector& y_pred) const override;
+    Vector Grad(const Vector& y_true, const Vector& y_pred) const override;
+};
+
+class CrossEntropyWithLogits : public LossFunction {
+   public:
+    Scalar Loss(const Vector& y_true, const Vector& logits) const override;
+    Vector Grad(const Vector& y_true, const Vector& logits) const override;
 };
 
 }  // namespace nn
