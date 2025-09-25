@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Alias.h"
 
 namespace nn {
@@ -15,10 +17,17 @@ class ReLU : public ActivationFunction {
     Vector derivative(const Vector& z) const override;
 };
 
+class Identity : public ActivationFunction {
+   public:
+    Vector forward(const Vector& z) const override;
+    Vector derivative(const Vector& z) const override;
+};
+
 class Softmax : public ActivationFunction {
    public:
     Vector forward(const Vector& z) const override;
     Vector derivative(const Vector& z) const override;
+    Vector backwardFromDy(const Vector& y, const Vector& dL_dy) const;
 };
 
 }  // namespace nn
