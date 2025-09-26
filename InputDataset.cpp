@@ -14,19 +14,19 @@ namespace nn {
 
 static inline Vector ToOneHot(int label) {
     Vector y = Vector::Zero(10);
-    y[static_cast<Index>(label)] = Scalar(1);
+    y[static_cast<Index>(label)] = 1.0f;
     return y;
 }
 
 static inline void FillXy(Matrix& X, Matrix& y, const std::vector<std::vector<uint8_t>>& images,
                           const std::vector<uint8_t>& labels) {
-    const Index n = static_cast<Index>(images.size());
+    auto n = static_cast<Index>(images.size());
     X.resize(n, 784);
     y.resize(n, 10);
     for (Index i = 0; i < n; ++i) {
         // вход это строка из 784 признаков, ее нужно нормализовать в [0, 1]
         for (int j = 0; j < 784; ++j) {
-            X(i, j) = static_cast<Scalar>(images[static_cast<size_t>(i)][j]) / Scalar(255);
+            X(i, j) = static_cast<Scalar>(images[static_cast<size_t>(i)][j]) / 255.0f;
         }
         y.row(i) = ToOneHot(labels[static_cast<size_t>(i)]).transpose();
     }

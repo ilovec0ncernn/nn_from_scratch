@@ -11,8 +11,8 @@ class Layer {
    public:
     Layer(Index in_dim, Index out_dim, const ActivationFunction* act, RNG& rng);
 
-    Vector Forward(const Vector& x); // forward: y = sigma(Ax + b)
-    Vector BackwardDy(const Vector& dL_dy); // backward: на вход dL/dy, возвращает dL/dx и накапливает dA, db
+    Vector Forward(const Vector& x);         // forward: y = sigma(Ax + b)
+    Vector BackwardDy(const Vector& dL_dy);  // backward: на вход dL/dy, возвращает dL/dx и накапливает dA, db
 
     // шаг по среднему градиенту за батч + обнуление
     void Step(Scalar lr, int batch_size);
@@ -45,7 +45,7 @@ class Layer {
     Vector b_;
     const ActivationFunction* sigma_;
 
-    Vector x_, z_, y_; // кэши для backprop
+    Vector x_, z_, y_;  // кэши для backprop
 
     // аккумуляторы градиентов за батч
     Matrix dA_sum_;

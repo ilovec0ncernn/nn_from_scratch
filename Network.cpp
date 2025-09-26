@@ -51,7 +51,8 @@ void Network::Train(const Matrix& X, const Matrix& Y, const Matrix& X_val, const
     for (int epoch = 1; epoch <= cfg.epochs; ++epoch) {
         std::shuffle(order.begin(), order.end(), shuffle_eng_);
 
-        int correct = 0, seen = 0;
+        int correct = 0;
+        int seen = 0;
 
         for (int i = 0; i < n; i += b) {
             const int r = std::min(b, n - i);
@@ -79,7 +80,7 @@ void Network::Train(const Matrix& X, const Matrix& Y, const Matrix& X_val, const
                 correct += (yi == pi);
                 ++seen;
 
-                Vector grad = loss.Grad(y_true, logits);  // dL/d(logits)
+                Vector grad = loss.Gradient(y_true, logits);  // dL/d(logits)
 
                 // backpropagation
                 grad = layers_.back().BackwardDy(grad);
