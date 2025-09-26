@@ -19,7 +19,7 @@ git submodule update --init --recursive
 Сборка проекта на Windows (MingW) из корневой папки:
 
 ```powershell
-cmake -S . -B build -G "MinGW Makefiles"
+cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j 8
 .\build\nn_run.exe
 ```
