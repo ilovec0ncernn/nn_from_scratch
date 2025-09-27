@@ -10,3 +10,4 @@ SortIncludes: CaseInsensitive
 ColumnLimit: 120
 DerivePointerAlignment: true
 KeepEmptyLinesAtTheStartOfBlocks: true
+InsertNewlineAtEOF: true
