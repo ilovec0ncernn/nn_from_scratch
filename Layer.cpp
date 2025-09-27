@@ -45,7 +45,7 @@ Vector Layer::BackwardDy(const Vector& dL_dy) {
     dA_sum_ += dL_dz * x_.transpose();
     db_sum_ += dL_dz;
 
-    return A_.transpose() * dL_dz; // dL/dx
+    return A_.transpose() * dL_dz;  // dL/dx
 }
 
 void Layer::ZeroGrad() {

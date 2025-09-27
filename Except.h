@@ -4,4 +4,4 @@ namespace except {
 
 void React();
 
-} // namespace except
+}  // namespace except
