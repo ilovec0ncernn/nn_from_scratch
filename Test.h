@@ -1,12 +1,5 @@
 #pragma once
 
-#include "ActivationFunctions.h"
-#include "Alias.h"
-#include "InputDataset.h"
-#include "LossFunctions.h"
-#include "Metrics.h"
-#include "Network.h"
-
 namespace nn {
 
 struct TestConfig {
