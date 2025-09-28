@@ -21,7 +21,7 @@ class Network {
     explicit Network(RNG& rng);
 
     // конструируем архитектуру нейросети
-    void AddLayer(Index in_dim, Index out_dim, const ActivationFunction* sigma, RNG& rng);
+    void AddLayer(Index in_dim, Index out_dim, Activation sigma, RNG& rng);
 
     // обучение и вывод метрик в std::cout
     void Train(const Matrix& X, const Matrix& Y, const Matrix& X_val, const Matrix& Y_val, const TrainConfig& cfg,

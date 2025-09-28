@@ -1,33 +1,34 @@
 #pragma once
 
+#include <functional>
+
 #include "Alias.h"
 
 namespace nn {
 
-class ActivationFunction {
-   public:
-    virtual ~ActivationFunction() = default;
-    virtual Vector Forward(const Vector& z) const = 0;     // sigma(z) (element-wise)
-    virtual Vector Derivative(const Vector& z) const = 0;  // dsigma/dz (element-wise)
-};
+class Activation {
+    using ForwardSig = Vector(const Vector&);
+    using BackwardSig = Vector(const Vector&, const Vector&);
 
-class ReLU : public ActivationFunction {
    public:
-    Vector Forward(const Vector& z) const override;
-    Vector Derivative(const Vector& z) const override;
-};
+    Vector forward(const Vector& z) const {
+        return forward_(z);
+    }
+    Vector backward(const Vector& y, const Vector& u) const {
+        return backward_(y, u);
+    }
+    Activation() = default;
+    Activation(std::function<ForwardSig> fwd, std::function<BackwardSig> bwd)
+        : forward_(std::move(fwd)), backward_(std::move(bwd)) {
+    }
 
-class Identity : public ActivationFunction {
-   public:
-    Vector Forward(const Vector& z) const override;
-    Vector Derivative(const Vector& z) const override;
-};
+    static Activation ReLU();
+    static Activation Identity();
+    static Activation Softmax();
 
-class Softmax : public ActivationFunction {
-   public:
-    Vector Forward(const Vector& z) const override;
-    Vector Derivative(const Vector& z) const override;
-    Vector BackwardFromDy(const Vector& y, const Vector& dL_dy) const;
+   private:
+    std::function<ForwardSig> forward_;
+    std::function<BackwardSig> backward_;
 };
 
 }  // namespace nn

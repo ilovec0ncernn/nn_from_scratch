@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <iostream>
 #include <numeric>
+#include <utility>
 
 namespace nn {
 
@@ -13,8 +14,8 @@ Network::Network(RNG& rng) {
     shuffle_eng_.seed(seed);
 }
 
-void Network::AddLayer(Index in_dim, Index out_dim, const ActivationFunction* sigma, RNG& rng) {
-    layers_.emplace_back(in_dim, out_dim, sigma, rng);
+void Network::AddLayer(Index in_dim, Index out_dim, Activation sigma, RNG& rng) {
+    layers_.emplace_back(in_dim, out_dim, std::move(sigma), rng);
 }
 
 Vector Network::PredictOne(const Vector& x) const {

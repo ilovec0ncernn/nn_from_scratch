@@ -9,10 +9,10 @@ namespace nn {
 
 class Layer {
    public:
-    Layer(Index in_dim, Index out_dim, const ActivationFunction* act, RNG& rng);
+    Layer(Index in_dim, Index out_dim, Activation sigma, RNG& rng);
 
-    Vector Forward(const Vector& x);         // forward: y = sigma(Ax + b)
-    Vector BackwardDy(const Vector& dL_dy);  // backward: на вход dL/dy, возвращает dL/dx и накапливает dA, db
+    Vector Forward(const Vector& x);
+    Vector BackwardDy(const Vector& dL_dy);
 
     // шаг по среднему градиенту за батч + обнуление
     void Step(Scalar lr, int batch_size);
@@ -43,7 +43,7 @@ class Layer {
     Index out_dim_;
     Matrix A_;
     Vector b_;
-    const ActivationFunction* sigma_;
+    Activation sigma_;
 
     Vector x_, z_, y_;  // кэши для backprop
 

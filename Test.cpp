@@ -30,14 +30,11 @@ void TestMnistBasic(const TestConfig& cfg) {
     Matrix y_test = TakeRows(split.y_test, cfg.test_limit);
 
     RNG rng(42);
-    ReLU relu;
-    Softmax sm;
-    Identity id;
 
     Network net(rng);
-    net.AddLayer(784, 128, &relu, rng);  // hidden-1 ReLU
-    net.AddLayer(128, 10, &sm, rng);     // hidden-2 Softmax
-    net.AddLayer(10, 10, &id, rng);      // выход логиты
+    net.AddLayer(784, 128, Activation::ReLU(), rng);
+    net.AddLayer(128, 10, Activation::Softmax(), rng);
+    net.AddLayer(10, 10, Activation::Identity(), rng);
 
     // обучение
     TrainConfig tcfg;

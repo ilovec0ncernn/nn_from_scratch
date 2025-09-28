@@ -2,44 +2,38 @@
 
 namespace nn {
 
-Vector ReLU::Forward(const Vector& z) const {
+static Vector ReluForward(const Vector& z) {
     return z.cwiseMax(0.0f);
 }
-
-Vector ReLU::Derivative(const Vector& z) const {
-    Vector d(z.size());
-    for (Index i = 0; i < z.size(); ++i) {
-        d[i] = (z[i] > 0.0f) ? 1.0f : 0.0f;
-    }
-    return d;
+static Vector ReluBackward(const Vector& y, const Vector& dL_dy) {
+    return ((y.array() > 0.0f).cast<Scalar>() * dL_dy.array()).matrix();
 }
 
-Vector Identity::Forward(const Vector& z) const {
+static Vector IdForward(const Vector& z) {
     return z;
 }
-
-Vector Identity::Derivative(const Vector& z) const {
-    return Vector::Ones(z.size());
+static Vector IdBackward(const Vector&, const Vector& dL_dy) {
+    return dL_dy;
 }
 
-Vector Softmax::Forward(const Vector& z) const {
+static Vector SoftmaxForward(const Vector& z) {
     const Scalar m = z.maxCoeff();
     const Vector e = (z.array() - m).exp().matrix();
-    const Scalar s = e.sum();
-    return e / s;
+    return e / e.sum();
 }
-
-Vector Softmax::Derivative(const Vector& z) const {
-    Vector d(z.size());
-    for (Index i = 0; i < z.size(); ++i) {
-        d[i] = z[i] * (1.0f - z[i]);  // диагональ якобиана
-    }
-    return d;
-}
-
-Vector Softmax::BackwardFromDy(const Vector& y, const Vector& dL_dy) const {
+static Vector SoftmaxBackward(const Vector& y, const Vector& dL_dy) {
     const Scalar dot = y.dot(dL_dy);
     return (y.array() * (dL_dy.array() - dot)).matrix();
+}
+
+Activation Activation::ReLU() {
+    return Activation{ReluForward, ReluBackward};
+}
+Activation Activation::Identity() {
+    return Activation{IdForward, IdBackward};
+}
+Activation Activation::Softmax() {
+    return Activation{SoftmaxForward, SoftmaxBackward};
 }
 
 }  // namespace nn

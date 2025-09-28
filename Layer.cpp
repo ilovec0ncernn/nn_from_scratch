@@ -1,6 +1,7 @@
 #include "Layer.h"
 
 #include <EigenRand/EigenRand>
+#include <utility>
 
 namespace nn {
 
@@ -14,12 +15,12 @@ Vector Layer::InitB(Index out_dim, RNG& rng) {
     return v * 0.01f;
 }
 
-Layer::Layer(Index in_dim, Index out_dim, const ActivationFunction* sigma, RNG& rng)
+Layer::Layer(Index in_dim, Index out_dim, Activation sigma, RNG& rng)
     : in_dim_(in_dim)
     , out_dim_(out_dim)
     , A_(InitA(out_dim, in_dim, rng))
     , b_(InitB(out_dim, rng))
-    , sigma_(sigma)
+    , sigma_(std::move(sigma))
     , dA_sum_(Matrix::Zero(out_dim, in_dim))
     , db_sum_(Vector::Zero(out_dim)) {
 }
@@ -27,21 +28,13 @@ Layer::Layer(Index in_dim, Index out_dim, const ActivationFunction* sigma, RNG& 
 Vector Layer::Forward(const Vector& x) {
     x_ = x;
     z_ = A_ * x_ + b_;
-    y_ = sigma_->Forward(z_);
+    y_ = sigma_.forward(z_);
     return y_;
 }
 
 Vector Layer::BackwardDy(const Vector& dL_dy) {
-    // dL/dz
-    Vector dL_dz;
-    if (auto sm = dynamic_cast<const Softmax*>(sigma_)) {
-        dL_dz = sm->BackwardFromDy(y_, dL_dy);
-    } else {
-        Vector d = sigma_->Derivative(z_);
-        dL_dz = (dL_dy.array() * d.array()).matrix();
-    }
+    Vector dL_dz = sigma_.backward(y_, dL_dy);
 
-    // градиенты параметров
     dA_sum_ += dL_dz * x_.transpose();
     db_sum_ += dL_dz;
 
@@ -54,7 +47,7 @@ void Layer::ZeroGrad() {
 }
 
 void Layer::Step(float lr, int batch_size) {
-    const float scale = lr / static_cast<float>(batch_size);
+    const Scalar scale = lr / static_cast<float>(batch_size);
     A_ -= scale * dA_sum_;
     b_ -= scale * db_sum_;
     ZeroGrad();
