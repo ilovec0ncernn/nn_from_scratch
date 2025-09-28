@@ -32,11 +32,11 @@ static inline void FillXy(Matrix& X, Matrix& y, const std::vector<std::vector<ui
     }
 }
 
-Split InputDataset::LoadMnist(const std::string& dir) {
-    auto dataset = mnist::read_dataset<std::vector, std::vector, uint8_t, uint8_t>(dir);
+Split InputDataset::LoadMnist(const std::filesystem::path& dir) {
+    auto dataset = mnist::read_dataset<std::vector, std::vector, uint8_t, uint8_t>(dir.string());
     // dataset.training_images/labels, dataset.test_images/labels
     if (dataset.training_images.empty() || dataset.test_images.empty()) {
-        throw std::runtime_error("mnist files not found in \"" + dir);
+        throw std::runtime_error("mnist files not found in \"" + dir.string());
     }
     Split split;
     FillXy(split.X_train, split.y_train, dataset.training_images, dataset.training_labels);

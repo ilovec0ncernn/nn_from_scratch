@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include <filesystem>
 
 #include "Alias.h"
 
@@ -17,7 +17,7 @@ struct Split {
 
 class InputDataset {
    public:
-    static Split LoadMnist(const std::string& dir = NN_MNIST_DIR);
+   static Split LoadMnist(const std::filesystem::path& dir = std::filesystem::path{NN_MNIST_DIR});
 };
 
 }  // namespace nn
