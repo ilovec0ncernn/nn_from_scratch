@@ -33,7 +33,6 @@ class Network {
    private:
     Matrix ForwardAll(const Matrix& Xb);
     Matrix BackwardAll(const Matrix& dY);
-    void ZeroGrads();
     void StepAll(Scalar lr, int batch_size);
 
     std::vector<Layer> layers_;

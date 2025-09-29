@@ -25,7 +25,6 @@ static Scalar Normalize(uint8_t pixel) noexcept {
 
 static std::pair<Matrix, Matrix> MakeXY(const std::vector<std::vector<uint8_t>>& images,
                                         const std::vector<uint8_t>& labels) {
-    assert(images.size() == labels.size());
     const Index n = static_cast<Index>(images.size());
 
     Matrix X(784, n);
@@ -33,7 +32,6 @@ static std::pair<Matrix, Matrix> MakeXY(const std::vector<std::vector<uint8_t>>&
 
     for (Index i = 0; i < n; ++i) {
         const auto& img = images[static_cast<size_t>(i)];
-        assert(static_cast<Index>(img.size()) == 784 && "image is not 784 pixels");
         for (Index j = 0; j < 784; ++j) {
             X(j, i) = Normalize(img[static_cast<size_t>(j)]);
         }

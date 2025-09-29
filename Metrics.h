@@ -13,7 +13,7 @@ class Metric {
     Metric();
     explicit Metric(std::function<BatchSig> value);
 
-    Scalar Value(const Matrix& Y_true_cols, const Matrix& Y_pred_or_logits_cols) const;
+    Scalar Value(const Matrix& Y_true_cols, const Matrix& Y_logits_cols) const;
 
     static Metric Accuracy();
     static Metric CrossEntropy();

@@ -1,6 +1,5 @@
 #include "Metrics.h"
 
-#include <cassert>
 #include <cmath>
 #include <utility>
 
@@ -40,8 +39,8 @@ Metric::Metric() = default;
 Metric::Metric(std::function<BatchSig> value) : value_(std::move(value)) {
 }
 
-Scalar Metric::Value(const Matrix& Y_true_cols, const Matrix& Y_pred_or_logits_cols) const {
-    return static_cast<Scalar>(value_(Y_true_cols, Y_pred_or_logits_cols));
+Scalar Metric::Value(const Matrix& Y_true_cols, const Matrix& Y_logits_cols) const {
+    return value_(Y_true_cols, Y_logits_cols);
 }
 
 Metric Metric::Accuracy() {

@@ -15,7 +15,7 @@ class Activation {
     Activation(std::function<ForwardSig> fwd, std::function<BackwardSig> bwd);
 
     Vector Forward(const Vector& z) const;
-    Vector Backward(const Vector& y, const Vector& u) const;
+    Vector Backward(const Vector& y, const Vector& dL_dy) const;
 
     static Activation ReLU();
     static Activation Identity();
