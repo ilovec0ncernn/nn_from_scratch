@@ -7,6 +7,9 @@
 
 namespace nn {
 
+enum class In : Index {};
+enum class Out : Index {};
+
 class Layer {
    public:
     Layer(Index in_dim, Index out_dim, Activation sigma, RNG& rng);
@@ -14,44 +17,29 @@ class Layer {
     Vector Forward(const Vector& x);
     Vector BackwardDy(const Vector& dL_dy);
 
-    // шаг по среднему градиенту за батч + обнуление
+    Matrix Forward(const Matrix& X);
+    Matrix BackwardDy(const Matrix& dL_dy);
+
     void Step(Scalar lr, int batch_size);
     void ZeroGrad();
 
-    const Matrix& A() const {
-        return A_;
-    }
-    const Vector& b() const {
-        return b_;
-    }
-    Matrix& A() {
-        return A_;
-    }
-    Vector& b() {
-        return b_;
-    }
-
     Index InDim() const {
-        return in_dim_;
+        return static_cast<Index>(A_.cols());
     }
     Index OutDim() const {
-        return out_dim_;
+        return static_cast<Index>(A_.rows());
     }
 
    private:
-    Index in_dim_;
-    Index out_dim_;
     Matrix A_;
     Vector b_;
     Activation sigma_;
 
-    Vector x_, z_, y_;  // кэши для backprop
+    Matrix x_, z_, y_;  // кэши для backprop
 
-    // аккумуляторы градиентов за батч
     Matrix dA_sum_;
     Vector db_sum_;
 
-    // инициализация
     static Matrix InitA(Index out_dim, Index in_dim, RNG& rng);
     static Vector InitB(Index out_dim, RNG& rng);
 };
