@@ -11,16 +11,11 @@ class Activation {
     using BackwardSig = Vector(const Vector&, const Vector&);
 
    public:
-    Vector forward(const Vector& z) const {
-        return forward_(z);
-    }
-    Vector backward(const Vector& y, const Vector& u) const {
-        return backward_(y, u);
-    }
-    Activation() = default;
-    Activation(std::function<ForwardSig> fwd, std::function<BackwardSig> bwd)
-        : forward_(std::move(fwd)), backward_(std::move(bwd)) {
-    }
+    Activation();
+    Activation(std::function<ForwardSig> fwd, std::function<BackwardSig> bwd);
+
+    Vector Forward(const Vector& z) const;
+    Vector Backward(const Vector& y, const Vector& u) const;
 
     static Activation ReLU();
     static Activation Identity();

@@ -1,12 +1,14 @@
 #include "ActivationFunctions.h"
 
+#include <utility>
+
 namespace nn {
 
 static Vector ReluForward(const Vector& z) {
-    return z.cwiseMax(0.0f);
+    return z.cwiseMax(Scalar(0));
 }
 static Vector ReluBackward(const Vector& y, const Vector& dL_dy) {
-    return ((y.array() > 0.0f).cast<Scalar>() * dL_dy.array()).matrix();
+    return ((y.array() > Scalar(0)).template cast<Scalar>() * dL_dy.array()).matrix();
 }
 
 static Vector IdForward(const Vector& z) {
@@ -24,6 +26,17 @@ static Vector SoftmaxForward(const Vector& z) {
 static Vector SoftmaxBackward(const Vector& y, const Vector& dL_dy) {
     const Scalar dot = y.dot(dL_dy);
     return (y.array() * (dL_dy.array() - dot)).matrix();
+}
+
+Activation::Activation(std::function<ForwardSig> fwd, std::function<BackwardSig> bwd)
+    : forward_(std::move(fwd)), backward_(std::move(bwd)) {
+}
+
+Vector Activation::Forward(const Vector& z) const {
+    return forward_ ? forward_(z) : z;
+}
+Vector Activation::Backward(const Vector& y, const Vector& dL_dy) const {
+    return backward_ ? backward_(y, dL_dy) : dL_dy;
 }
 
 Activation Activation::ReLU() {
