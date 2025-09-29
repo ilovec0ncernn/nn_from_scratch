@@ -2,6 +2,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <utility>
 
 #include "ActivationFunctions.h"
 #include "Alias.h"
@@ -12,45 +13,61 @@
 
 namespace nn {
 
-static Matrix TakeRows(const Matrix& M, int n) {
-    if (n < 0 || n >= M.rows()) {
-        return M;
-    }
-    return M.topRows(n);
+TrainConfig TestConfig::ToTrainConfig(std::uint64_t shuffle_seed) const {
+    TrainConfig t;
+    t.epochs = epochs;
+    t.batch_size = batch_size;
+    t.lr = lr;
+    t.shuffle_seed = shuffle_seed;
+    return t;
 }
 
-void TestMnistBasic(const TestConfig& cfg) {
-    std::cout << "training model on mnist dataset" << std::endl;
+static Matrix TakeCols(const Matrix& M, int n) {
+    if (n < 0 || n >= M.cols()) {
+        return M;
+    }
+    return M.leftCols(n);
+}
 
-    auto split = InputDataset::LoadMnist();
+static Split LoadData(const TestConfig& cfg) {
+    Split s = InputDataset::LoadMnist();
+    s.X_train = TakeCols(s.X_train, cfg.train_limit);
+    s.y_train = TakeCols(s.y_train, cfg.train_limit);
+    s.X_test = TakeCols(s.X_test, cfg.test_limit);
+    s.y_test = TakeCols(s.y_test, cfg.test_limit);
+    return s;
+}
 
-    Matrix X_train = TakeRows(split.X_train, cfg.train_limit);
-    Matrix y_train = TakeRows(split.y_train, cfg.train_limit);
-    Matrix X_test = TakeRows(split.X_test, cfg.test_limit);
-    Matrix y_test = TakeRows(split.y_test, cfg.test_limit);
+static Network CreateNet(RNG& rng) {
+    Network net;
+    net.AddFirstLayer(784, 128, Activation::ReLU(), rng).AddLayer(10, Activation::Identity(), rng);
+    return net;
+}
 
-    RNG rng(42);
-
-    Network net(rng);
-    net.AddLayer(784, 128, Activation::ReLU(), rng);
-    net.AddLayer(128, 10, Activation::Softmax(), rng);
-    net.AddLayer(10, 10, Activation::Identity(), rng);
-
-    // обучение
+static void TrainNet(Network& net, const Split& s, const TestConfig& cfg) {
     TrainConfig tcfg;
     tcfg.epochs = cfg.epochs;
     tcfg.batch_size = cfg.batch_size;
     tcfg.lr = cfg.lr;
-    MSE mse;
-    CrossEntropyWithLogits celoss;
-    net.Train(X_train, y_train, X_test, y_test, tcfg, celoss);
 
-    // итоговые метрики
-    Accuracy acc_metric;
-    CrossEntropyMetric ce_metric;
-    Matrix logits = net.Predict(X_test);
-    float final_acc = acc_metric.Value(y_test, logits);
-    float final_ce = ce_metric.Value(y_test, logits);
+    Loss loss = Loss::CrossEntropy();
+    net.Train(s.X_train, s.y_train, s.X_test, s.y_test, tcfg, loss);
+}
+
+void TestMnistBasic(const TestConfig& cfg) {
+    std::cout << "training model on mnist dataset\n";
+
+    RNG rng;
+    Split data = LoadData(cfg);
+    Network net = CreateNet(rng);
+
+    TrainNet(net, data, cfg);
+
+    Metric acc = Metric::Accuracy();
+    Metric ce = Metric::CrossEntropy();
+    Matrix logits = net.Predict(data.X_test);
+    Scalar final_acc = acc.Value(data.y_test, logits);
+    Scalar final_ce = ce.Value(data.y_test, logits);
 
     std::cout << "[test] final test accuracy=" << std::fixed << std::setprecision(4) << final_acc
               << ", final CE=" << std::fixed << std::setprecision(4) << final_ce << std::endl;

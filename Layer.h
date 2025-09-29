@@ -7,9 +7,6 @@
 
 namespace nn {
 
-enum class In : Index {};
-enum class Out : Index {};
-
 class Layer {
    public:
     Layer(Index in_dim, Index out_dim, Activation sigma, RNG& rng);
@@ -21,27 +18,22 @@ class Layer {
     Matrix BackwardDy(const Matrix& dL_dy);
 
     void Step(Scalar lr, int batch_size);
-    void ZeroGrad();
 
-    Index InDim() const {
-        return static_cast<Index>(A_.cols());
-    }
-    Index OutDim() const {
-        return static_cast<Index>(A_.rows());
-    }
+    Index InDim() const;
+    Index OutDim() const;
 
    private:
+    static Matrix InitA(Index out_dim, Index in_dim, RNG& rng);
+    static Vector InitB(Index out_dim);
+
     Matrix A_;
     Vector b_;
     Activation sigma_;
 
-    Matrix x_, z_, y_;  // кэши для backprop
+    Matrix x_, z_, y_;
 
     Matrix dA_sum_;
     Vector db_sum_;
-
-    static Matrix InitA(Index out_dim, Index in_dim, RNG& rng);
-    static Vector InitB(Index out_dim, RNG& rng);
 };
 
 }  // namespace nn

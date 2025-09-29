@@ -11,8 +11,10 @@
 namespace nn {
 
 struct Split {
-    Matrix X_train, y_train;
-    Matrix X_test, y_test;
+    Matrix X_train;
+    Matrix y_train;
+    Matrix X_test;
+    Matrix y_test;
 };
 
 class InputDataset {

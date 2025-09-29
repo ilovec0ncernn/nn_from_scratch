@@ -14,26 +14,31 @@ struct TrainConfig {
     int epochs = 10;
     int batch_size = 64;
     float lr = 0.05f;
+    std::uint64_t shuffle_seed = 42;
 };
 
 class Network {
    public:
-    explicit Network(RNG& rng);
+    Network() = default;
 
-    // конструируем архитектуру нейросети
-    void AddLayer(Index in_dim, Index out_dim, Activation sigma, RNG& rng);
+    Network& AddFirstLayer(Index in_dim, Index out_dim, Activation sigma, RNG& rng);
+    Network& AddLayer(Index out_dim, Activation sigma, RNG& rng);
 
-    // обучение и вывод метрик в std::cout
-    void Train(const Matrix& X, const Matrix& Y, const Matrix& X_val, const Matrix& Y_val, const TrainConfig& cfg,
-               LossFunction& loss);
+    void Train(const Matrix& X_cols, const Matrix& Y_cols, const Matrix& X_val_cols, const Matrix& Y_val_cols,
+               const TrainConfig& cfg, const Loss& loss);
 
-    // предсказания
-    Vector PredictOne(const Vector& x) const;  // прямой прогон одного объекта
-    Matrix Predict(const Matrix& X) const;     // прогон матрицы объектов (построчно)
+    Matrix Predict(const Matrix& X_cols);
+    Vector PredictOne(const Vector& x);
 
    private:
+    Matrix ForwardAll(const Matrix& Xb);
+    Matrix BackwardAll(const Matrix& dY);
+    void ZeroGrads();
+    void StepAll(Scalar lr, int batch_size);
+
     std::vector<Layer> layers_;
-    std::mt19937_64 shuffle_eng_;
+    Index last_dim_ = -1;
+    bool has_input_dim_ = false;
 };
 
 }  // namespace nn

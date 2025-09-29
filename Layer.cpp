@@ -6,21 +6,23 @@
 namespace nn {
 
 Matrix Layer::InitA(Index out_dim, Index in_dim, RNG& rng) {
-    Matrix M = Eigen::Rand::normal<Matrix>(out_dim, in_dim, rng.gen);
-    return M * 0.05f;
+    const Scalar std = std::sqrt(Scalar(2) / static_cast<Scalar>(in_dim + out_dim));
+    return Eigen::Rand::normal<Matrix>(out_dim, in_dim, rng.gen) * std;
 }
 
-Vector Layer::InitB(Index out_dim, RNG& rng) {
-    Vector v = Eigen::Rand::normal<Vector>(out_dim, 1, rng.gen);
-    return v * 0.01f;
+Vector Layer::InitB(Index out_dim) {
+    return Vector::Constant(out_dim, Scalar(0.01f));
 }
 
 Layer::Layer(Index in_dim, Index out_dim, Activation sigma, RNG& rng)
-    : A_(InitA(out_dim, in_dim, rng))
-    , b_(InitB(out_dim, rng))
-    , sigma_(std::move(sigma))
-    , dA_sum_(Matrix::Zero(out_dim, in_dim))
-    , db_sum_(Vector::Zero(out_dim)) {
+    : A_(InitA(out_dim, in_dim, rng)), b_(InitB(out_dim)), sigma_(std::move(sigma)) {
+}
+
+Index Layer::InDim() const {
+    return static_cast<Index>(A_.cols());
+}
+Index Layer::OutDim() const {
+    return static_cast<Index>(A_.rows());
 }
 
 Vector Layer::Forward(const Vector& x) {
@@ -44,36 +46,42 @@ Matrix Layer::Forward(const Matrix& X) {
 
     y_.resize(OutDim(), X.cols());
     for (Index c = 0; c < X.cols(); ++c) {
-        y_.col(c) = sigma_.forward(z_.col(c));
+        y_.col(c) = sigma_.Forward(z_.col(c));
     }
     return y_;
 }
 
 Matrix Layer::BackwardDy(const Matrix& dL_dy) {
-    const Index b = dL_dy.cols();
+    const Index B = dL_dy.cols();
 
-    Matrix dL_dz(OutDim(), b);
-    for (Index c = 0; c < b; ++c) {
-        dL_dz.col(c) = sigma_.backward(y_.col(c), dL_dy.col(c));
+    Matrix dL_dz(OutDim(), B);
+    for (Index c = 0; c < B; ++c) {
+        dL_dz.col(c) = sigma_.Backward(y_.col(c), dL_dy.col(c));
     }
 
-    dA_sum_.noalias() += dL_dz * x_.transpose();
-    db_sum_.noalias() += dL_dz.rowwise().sum();
+    if (dA_sum_.rows() != OutDim() || dA_sum_.cols() != InDim()) {
+        dA_sum_.resize(OutDim(), InDim());
+    }
+    if (db_sum_.size() != OutDim()) {
+        db_sum_.resize(OutDim());
+    }
 
-    Matrix dL_dx = A_.transpose() * dL_dz;
-    return dL_dx;
-}
+    dA_sum_.noalias() = dL_dz * x_.transpose();
+    db_sum_.noalias() = dL_dz.rowwise().sum();
 
-void Layer::ZeroGrad() {
-    dA_sum_.setZero();
-    db_sum_.setZero();
+    return A_.transpose() * dL_dz;
 }
 
 void Layer::Step(float lr, int batch_size) {
     const Scalar scale = lr / static_cast<Scalar>(batch_size);
     A_ -= scale * dA_sum_;
     b_ -= scale * db_sum_;
-    ZeroGrad();
+    if (dA_sum_.size() != 0) {
+        dA_sum_.setZero();
+    }
+    if (db_sum_.size() != 0) {
+        db_sum_.setZero();
+    }
 }
 
 }  // namespace nn

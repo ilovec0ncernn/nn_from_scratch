@@ -25,15 +25,20 @@ static Scalar Normalize(uint8_t pixel) noexcept {
 
 static std::pair<Matrix, Matrix> MakeXY(const std::vector<std::vector<uint8_t>>& images,
                                         const std::vector<uint8_t>& labels) {
+    assert(images.size() == labels.size());
     const Index n = static_cast<Index>(images.size());
-    Matrix X(n, 784);
-    Matrix y(n, 10);
+
+    Matrix X(784, n);
+    Matrix y(10, n);
+
     for (Index i = 0; i < n; ++i) {
+        const auto& img = images[static_cast<size_t>(i)];
+        assert(static_cast<Index>(img.size()) == 784 && "image is not 784 pixels");
         for (Index j = 0; j < 784; ++j) {
-            X(i, j) = Normalize(images[static_cast<size_t>(i)][static_cast<size_t>(j)]);
+            X(j, i) = Normalize(img[static_cast<size_t>(j)]);
         }
         const Index lab = static_cast<Index>(labels[static_cast<size_t>(i)]);
-        y.row(i) = ToOneHot(lab).transpose();
+        y.col(i) = ToOneHot(lab);
     }
     return {std::move(X), std::move(y)};
 }
@@ -41,8 +46,9 @@ static std::pair<Matrix, Matrix> MakeXY(const std::vector<std::vector<uint8_t>>&
 Split InputDataset::LoadMnist(const std::filesystem::path& dir) {
     auto dataset = mnist::read_dataset<std::vector, std::vector, uint8_t, uint8_t>(dir.string());
     if (dataset.training_images.empty() || dataset.test_images.empty()) {
-        throw std::runtime_error("mnist files not found in \"" + dir.string());
+        throw std::runtime_error(std::string("mnist files not found in \"") + dir.string() + "\"");
     }
+
     Split split;
     {
         auto xy = MakeXY(dataset.training_images, dataset.training_labels);

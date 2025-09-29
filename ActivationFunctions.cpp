@@ -28,6 +28,8 @@ static Vector SoftmaxBackward(const Vector& y, const Vector& dL_dy) {
     return (y.array() * (dL_dy.array() - dot)).matrix();
 }
 
+Activation::Activation() = default;
+
 Activation::Activation(std::function<ForwardSig> fwd, std::function<BackwardSig> bwd)
     : forward_(std::move(fwd)), backward_(std::move(bwd)) {
 }

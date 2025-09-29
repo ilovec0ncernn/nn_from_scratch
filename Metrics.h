@@ -1,22 +1,25 @@
 #pragma once
+
+#include <functional>
+
 #include "Alias.h"
 
 namespace nn {
 
 class Metric {
-   public:
-    virtual ~Metric() = default;
-    virtual float Value(const Matrix& Y_true_onehot, const Matrix& Y_logits) const = 0;
-};
+    using BatchSig = Scalar(const Matrix&, const Matrix&);
 
-class Accuracy : public Metric {
    public:
-    float Value(const Matrix& Y_true_onehot, const Matrix& Y_logits) const override;
-};
+    Metric();
+    explicit Metric(std::function<BatchSig> value);
 
-class CrossEntropyMetric : public Metric {
-   public:
-    float Value(const Matrix& Y_true_onehot, const Matrix& Y_logits) const override;
+    Scalar Value(const Matrix& Y_true_cols, const Matrix& Y_pred_or_logits_cols) const;
+
+    static Metric Accuracy();
+    static Metric CrossEntropy();
+
+   private:
+    std::function<BatchSig> value_;
 };
 
 }  // namespace nn
